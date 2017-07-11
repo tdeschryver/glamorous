@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`already-ok.js 1`] = `
+"const MyDiv = glamorous.div(({theme}) => ({
+  fontSize: theme.main.fontSize,
+}))
+"
+`;
+
+exports[`simple.js 1`] = `
+"const MyDiv = glamorous.div(({theme}) => ({
+  fontSize: theme.main.fontSize,
+}))
+"
+`;

@@ -1,15 +1,91 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`already-ok.js 1`] = `
-"const MyDiv = glamorous.div(({theme}) => ({
+exports[`five.js 1`] = `
+"// should transform, merge props (object) and theme (properties)
+const Five = glamorous.div((
+  {
+    important,
+    main
+  }
+) => ({
+  fontSize: main.fontSize,
+  color: important ? 'red' : 'black'
+}))
+"
+`;
+
+exports[`four.js 1`] = `
+"// should transform, merge props (properties) and theme (object)
+const Four = glamorous.div((
+  {
+    important,
+    theme
+  }
+) => ({
+  fontSize: theme.main.fontSize,
+  color: important ? 'red' : 'black'
+}))
+"
+`;
+
+exports[`one.js 1`] = `
+"// should transform, only use theme
+const One = glamorous.div((
+  {
+    theme
+  }
+) => ({
+  fontSize: theme.main.fontSize
+}))
+"
+`;
+
+exports[`seven.js 1`] = `
+"// should not transform
+const Seven = glamorous.div(({theme}) => ({
   fontSize: theme.main.fontSize,
 }))
 "
 `;
 
-exports[`simple.js 1`] = `
-"const MyDiv = glamorous.div(({theme}) => ({
+exports[`six.js 1`] = `
+"// should transform, merge props (properties) and theme (properties)
+const Six = glamorous.div((
+  {
+    important,
+    main
+  }
+) => ({
+  fontSize: main.fontSize,
+  color: important ? 'red' : 'black'
+}))
+"
+`;
+
+exports[`three.js 1`] = `
+"// should transform, merge props (object) and theme (object) -> translate props object to keys
+const Three = glamorous.div((
+  {
+    important,
+    theme
+  }
+) => ({
   fontSize: theme.main.fontSize,
+  color: important ? 'red' : 'black'
+}))
+"
+`;
+
+exports[`two.js 1`] = `
+"
+// should transform, only use theme and third argument stays as is
+const Two = glamorous.div((
+  {
+    theme
+  },
+  tripple
+) => ({
+  fontSize: theme.main.fontSize
 }))
 "
 `;

@@ -1,22 +1,31 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`five.js 1`] = `
-"// should transform, merge props (object) and theme (properties)
-const Five = glamorous.div((
+exports[`eight.js 1`] = `
+"const Eight = glamorous.div((
   {
     important,
-    main
+
+    theme: {
+      main: {fontSize: theFontSize}
+    }
   }
 ) => ({
-  fontSize: main.fontSize,
+  fontSize: theFontSize,
   color: important ? 'red' : 'black'
 }))
 "
 `;
 
+exports[`five.js 1`] = `
+"const Five = glamorous.div(props => ({
+  fontSize: props.theme.main.fontSize,
+  color: props.important ? 'red' : 'black'
+}))
+"
+`;
+
 exports[`four.js 1`] = `
-"// should transform, merge props (properties) and theme (object)
-const Four = glamorous.div((
+"const Four = glamorous.div((
   {
     important,
     theme
@@ -28,9 +37,17 @@ const Four = glamorous.div((
 "
 `;
 
+exports[`nine.js 1`] = `
+"const Nine = glamorous.div(props => ({
+  fontSize: props.theme.main.fontSize,
+  fontWeight: props.theme.main.fontWeight,
+  color: props.important ? 'red' : 'black'
+}))
+"
+`;
+
 exports[`one.js 1`] = `
-"// should transform, only use theme
-const One = glamorous.div((
+"const One = glamorous.div((
   {
     theme
   }
@@ -41,19 +58,20 @@ const One = glamorous.div((
 `;
 
 exports[`seven.js 1`] = `
-"// should not transform
-const Seven = glamorous.div(({theme}) => ({
+"const Seven = glamorous.div(({theme}) => ({
   fontSize: theme.main.fontSize,
 }))
 "
 `;
 
 exports[`six.js 1`] = `
-"// should transform, merge props (properties) and theme (properties)
-const Six = glamorous.div((
+"const Six = glamorous.div((
   {
     important,
-    main
+
+    theme: {
+      main
+    }
   }
 ) => ({
   fontSize: main.fontSize,
@@ -63,8 +81,7 @@ const Six = glamorous.div((
 `;
 
 exports[`three.js 1`] = `
-"// should transform, merge props (object) and theme (object) -> translate props object to keys
-const Three = glamorous.div((
+"const Three = glamorous.div((
   {
     important,
     theme
@@ -78,7 +95,6 @@ const Three = glamorous.div((
 
 exports[`two.js 1`] = `
 "
-// should transform, only use theme and third argument stays as is
 const Two = glamorous.div((
   {
     theme

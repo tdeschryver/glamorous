@@ -8,25 +8,108 @@ module.exports = function(babel) {
     visitor: {
       CallExpression(path) {
         if (
+          !path.node.callee ||
           !path.node.callee.object ||
-          path.node.callee.object.name !== 'glamorous'
+          path.node.callee.object.name !== 'glamorous' ||
+          !path.node.arguments
         ) {
           return
         }
 
         path.node.arguments
-          .filter(arg => arg.params.length > 1) // we good, we good
+          .filter(arg => arg.params && arg.params.length > 1)
           .forEach(arg => {
             const [head, shoulders, ...rest] = arg.params
-            const themeProperties = t.isObjectPattern(shoulders) ?
-              shoulders.properties :
-              [propertyFactory(shoulders.name)]
 
             if (t.isObjectPattern(head)) {
-              // we can just merge both properties
-              head.properties = [...head.properties, ...themeProperties]
-              arg.params = [head, ...rest]
+              if (t.isObjectPattern(shoulders)) {
+                const shoulderProperties = t.objectProperty(
+                  t.identifier('theme'),
+                  t.objectExpression(shoulders.properties),
+                )
+                head.properties = [...head.properties, shoulderProperties]
+                arg.params = [head, ...rest]
+              } else {
+                head.properties = [
+                  ...head.properties,
+                  propertyFactory(shoulders.name),
+                ]
+                arg.params = [head, ...rest]
+              }
+            } else if (t.isObjectPattern(shoulders)) {
+              // eslint-disable-next-line func-style
+              const addProperty = (builder, property) => {
+                builder.forEach(item => {
+                  item.push(property)
+                })
+
+                builder.push([property])
+              }
+              // eslint-disable-next-line func-style
+              const loopProperties = (builder, {key, value}) => {
+                addProperty(builder, key.name)
+                if (value.properties) {
+                  return value.properties
+                    .map(p =>
+                      loopProperties(JSON.parse(JSON.stringify(builder)), p),
+                    )
+                    .reduce((flat, item) => {
+                      return flat.concat(item)
+                    }, [])
+                } else {
+                  addProperty([...builder], value.name)
+                  return builder
+                }
+              }
+
+              const builder = loopProperties([], shoulders.properties[0])
+
+              arg.body.properties.filter(p => p.value).forEach(prop => {
+                const props = builder
+                  .filter(b => b[b.length - 1] === prop.value.name)
+                  .sort(b => -b.length)[0]
+
+                if (props) {
+                  prop.value = props.reduce((acc, p, i) => {
+                    if (i + 1 === props.length) {
+                      return acc
+                    }
+                    acc.property = t.memberExpression(
+                      acc.property,
+                      t.identifier(p),
+                    )
+                    return acc
+                  }, t.memberExpression(t.identifier(head.name), t.identifier('theme'))) // eslint-disable-line max-len
+                } else {
+                  const themeProperties = shoulders.properties.map(
+                    p => p.key.name,
+                  )
+                  arg.body.properties
+                    .filter(
+                      p =>
+                        p.value &&
+                        p.value.object &&
+                        themeProperties.includes(p.value.object.name),
+                    )
+                    .forEach(p => {
+                      // recreate properties
+                      const prefix = t.memberExpression(
+                        t.identifier(''),
+                        t.identifier(p.value.object.name),
+                      )
+                      prefix.object = t.memberExpression(
+                        t.identifier(head.name),
+                        t.identifier('theme'),
+                      )
+                      p.value.object = prefix
+                    })
+
+                  arg.params = [head, ...rest]
+                }
+              })
             } else {
+              const themeProperties = [propertyFactory(shoulders.name)]
+
               // get every property that is being
               // accessed by the first property name
               const headProperties = arg.body.properties.filter(

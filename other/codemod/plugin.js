@@ -8,10 +8,17 @@ module.exports = function(babel) {
     visitor: {
       CallExpression(path) {
         if (
-          !path.node.callee ||
-          !path.node.callee.object ||
-          path.node.callee.object.name !== 'glamorous' ||
-          !path.node.arguments
+          !(
+            path.node.callee &&
+            path.node.callee.object &&
+            path.node.callee.object.name === 'glamorous' &&
+            path.node.arguments
+          ) &&
+          !(
+            path.node.callee &&
+            path.node.callee.callee &&
+            path.node.callee.callee.name === 'glamorous'
+          )
         ) {
           return
         }

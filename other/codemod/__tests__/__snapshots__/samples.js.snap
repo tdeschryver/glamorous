@@ -16,6 +16,14 @@ exports[`eight.js 1`] = `
 "
 `;
 
+exports[`eleven.js 1`] = `
+"const NavSeparator = glamorous(Separator)(props => ({
+  height: 1,
+  color: props.theme.color
+}))
+"
+`;
+
 exports[`five.js 1`] = `
 "const Five = glamorous.div(props => ({
   fontSize: props.theme.main.fontSize,

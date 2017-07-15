@@ -644,11 +644,12 @@ const NavToggle = glamorous.a(props => ({
   }
 }))
 
-const NavSeparator = glamorous(Separator)((props, {mediaQueries}) => ({
+const NavSeparator = glamorous(Separator)(props => ({
   height: 1,
+
   [mediaQueries.largeUp]: {
     display: 'none',
-  },
+  }
 }))
 
 // Used to hide text for a11y - ie. Home in navigation

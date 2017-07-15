@@ -53,24 +53,24 @@ const EditorContainer = glamorous.div(
   }),
 )
 
-// function CodePreview({
-//   noInline = true,
-//   code,
-//   scope = {glamorous, styledSystem, glamor},
-// }) {
-//   return (
-//     <StyledLiveProvider
-//       noInline={noInline}
-//       code={stripIndent(code).trim()}
-//       scope={scope}
-//     >
-//       <EditorContainer>
-//         <StyledLiveEditor />
-//         <StyledLivePreview />
-//       </EditorContainer>
-//       <StyledLiveError />
-//     </StyledLiveProvider>
-//   )
-// }
+function CodePreview({
+  noInline = true,
+  code,
+  scope = {glamorous, styledSystem, glamor},
+}) {
+  return (
+    <StyledLiveProvider
+      noInline={noInline}
+      code={stripIndent(code).trim()}
+      scope={scope}
+    >
+      <EditorContainer>
+        <StyledLiveEditor />
+        <StyledLivePreview />
+      </EditorContainer>
+      <StyledLiveError />
+    </StyledLiveProvider>
+  )
+}
 
 export default CodePreview

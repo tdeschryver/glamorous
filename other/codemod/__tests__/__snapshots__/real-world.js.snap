@@ -28,20 +28,20 @@ const Title = glamorous.div((
   fontWeight: 'bold'
 }))
 
-// function Callout({type = 'info', title, children}) {
-//   return (
-//     <Container type={type}>
-//       {title ?
-//         <Title type={type}>
-//           <div dangerouslySetInnerHTML={{__html: mdToHTML(title)}} />
-//         </Title> :
-//         null}
-//       <div>
-//         <div dangerouslySetInnerHTML={{__html: mdToHTML(children)}} />
-//       </div>
-//     </Container>
-//   )
-// }
+function Callout({type = 'info', title, children}) {
+  return (
+    <Container type={type}>
+      {title ?
+        <Title type={type}>
+          <div dangerouslySetInnerHTML={{__html: mdToHTML(title)}} />
+        </Title> :
+        null}
+      <div>
+        <div dangerouslySetInnerHTML={{__html: mdToHTML(children)}} />
+      </div>
+    </Container>
+  )
+}
 
 export default Callout
 "
@@ -103,25 +103,25 @@ const EditorContainer = glamorous.div(
   }),
 )
 
-// function CodePreview({
-//   noInline = true,
-//   code,
-//   scope = {glamorous, styledSystem, glamor},
-// }) {
-//   return (
-//     <StyledLiveProvider
-//       noInline={noInline}
-//       code={stripIndent(code).trim()}
-//       scope={scope}
-//     >
-//       <EditorContainer>
-//         <StyledLiveEditor />
-//         <StyledLivePreview />
-//       </EditorContainer>
-//       <StyledLiveError />
-//     </StyledLiveProvider>
-//   )
-// }
+function CodePreview({
+  noInline = true,
+  code,
+  scope = {glamorous, styledSystem, glamor},
+}) {
+  return (
+    <StyledLiveProvider
+      noInline={noInline}
+      code={stripIndent(code).trim()}
+      scope={scope}
+    >
+      <EditorContainer>
+        <StyledLiveEditor />
+        <StyledLivePreview />
+      </EditorContainer>
+      <StyledLiveError />
+    </StyledLiveProvider>
+  )
+}
 
 export default CodePreview
 "

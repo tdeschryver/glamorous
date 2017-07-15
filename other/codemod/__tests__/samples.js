@@ -30,18 +30,24 @@ function getFiles(subfolder) {
   })
 }
 
+const options = {
+  plugins: [
+    'syntax-jsx',
+    'syntax-class-properties',
+    'syntax-class-constructor-call',
+    'syntax-object-rest-spread',
+    'syntax-trailing-function-commas',
+    path.join(__dirname, '../plugin.js'),
+  ],
+  parserOpts: {
+    parser: recast.parse,
+  },
+  generatorOpts: {
+    generator: recast.print,
+  },
+  babelrc: false,
+}
 function transformFileAsync(subfolder, filename) {
-  const options = {
-    plugins: ['syntax-jsx', path.join(__dirname, '../plugin.js')],
-    parserOpts: {
-      parser: recast.parse,
-    },
-    generatorOpts: {
-      generator: recast.print,
-    },
-    babelrc: false,
-  }
-
   return new Promise((resolve, reject) => {
     babel.transformFile(
       path.join(__dirname, `./fixtures/${subfolder}/${filename}.js`),

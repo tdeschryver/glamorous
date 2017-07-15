@@ -80,6 +80,17 @@ exports[`six.js 1`] = `
 "
 `;
 
+exports[`ten.js 1`] = `
+"const Section = glamorous.section(p => ({
+  borderBottom: \`1px solid \${p.theme.colors.primary.light}\`,
+  width: '100%',
+  margin: '20px auto 75px',
+  paddingBottom: 20,
+  maxWidth: '50rem'
+}))
+"
+`;
+
 exports[`three.js 1`] = `
 "const Three = glamorous.div((
   {

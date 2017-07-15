@@ -126,3 +126,823 @@ function CodePreview({
 export default CodePreview
 "
 `;
+
+exports[`glamorous-docs-page.js 1`] = `
+"/* eslint import/max-dependencies:0 */
+import React from 'react'
+import Head from 'next/head'
+import glamorous, {Div} from 'glamorous'
+import slugify from 'slugify'
+import {Title} from './hero'
+import Layout from './layout'
+import twitterCard from './twitter-card'
+import interactiveMarkdown from './interactive-markdown'
+import ClickToRender from './click-to-render'
+import CodeSandboxEmbed from './code-sandbox-embed'
+import {Anchor} from './styled-links'
+import GitHubSVG from './svgs/github.svg'
+import LinkSVG from './svgs/link.svg'
+import mdToHTML, {mdToHTMLUnwrapped} from './utils/md-to-html'
+import content from './content/docs-page.md'
+
+const repoEditRootURL =
+  'https://github.com/kentcdodds/glamorous-website/edit/master'
+
+const TranslationProblem = glamorous.div(
+  {
+    display: 'inline-block',
+    borderRadius: '2px',
+    marginTop: 10,
+    marginBottom: 10,
+    marginLeft: 20,
+    fontSize: '0.8rem',
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingLeft: 10,
+    paddingRight: 10,
+    '& p': {
+      margin: 0,
+    },
+  },
+  ({theme: {mediaQueries}}) => ({
+    [mediaQueries.mediumDown]: {
+      display: 'block',
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    },
+  }),
+)
+
+const OutdatedTranslation = glamorous(
+  TranslationProblem,
+)(({theme: {colors}}) => ({
+  backgroundColor: colors.dangerLight,
+}))
+
+const MissingTranslation = glamorous(
+  TranslationProblem,
+)(({theme: {colors}}) => ({
+  backgroundColor: colors.warningLight,
+}))
+
+const PageWrapper = glamorous.div(({theme: {colors}}) => ({
+  backgroundColor: colors.white,
+  width: '100%',
+  padding: '1rem',
+  '& > h3': {
+    width: '100%',
+    margin: '20px auto',
+    maxWidth: '70rem',
+  },
+  '& svg': {
+    fill: \`\${colors.primary}\`,
+    width: '1rem',
+  },
+  '& img': {
+    width: '100%',
+  },
+}))
+
+const EditAnchorWrap = glamorous(Div)({
+  display: 'flex',
+  flexDirection: 'row-reverse',
+})
+
+export default DocsPage
+
+function DocsPage({url, pageContent = {}, sections = []}) {
+  return (
+    <Layout
+      pathname={url ? url.pathname : ''}
+      contributors={getContributors(sections)}
+    >
+      <Head>
+        <title>
+          {pageContent.title}
+        </title>
+        {twitterCard({
+          card: 'summary',
+          title: \`glamorous - \${pageContent.title}\`,
+          description: pageContent.heading,
+          pathname: url ? url.pathname : '',
+        })}
+      </Head>
+      <PageSections {...pageContent} sections={sections} />
+    </Layout>
+  )
+}
+
+function PageSections({title, note, heading, sections}) {
+  return (
+    <Div>
+      <PageWrapper>
+        <Title dangerouslySetInnerHTML={{__html: mdToHTMLUnwrapped(title)}} />
+        <Div
+          maxWidth=\\"50rem\\"
+          margin=\\"auto\\"
+          dangerouslySetInnerHTML={{__html: mdToHTMLUnwrapped(heading)}}
+        />
+        <Div
+          maxWidth=\\"50rem\\"
+          margin=\\"20px auto\\"
+          borderLeft=\\"3px solid\\"
+          paddingLeft={20}
+          opacity={0.8}
+        >
+          {interactiveMarkdown(note)}
+        </Div>
+        {sections.map(section =>
+          <DocSection key={section.meta.filename} {...section} />,
+        )}
+      </PageWrapper>
+    </Div>
+  )
+}
+
+function DocSection(props) {
+  const {title, subtitle, meta: {filename, isOutdated, isMissing}} = props
+
+  const Section = glamorous.section(p => ({
+    borderBottom: \`1px solid \${p.theme.colors.primary}\`,
+    width: '100%',
+    margin: '20px auto 75px',
+    paddingBottom: 20,
+    maxWidth: '50rem'
+  }))
+
+  return (
+    <Section>
+      {filename &&
+        <EditAnchorWrap>
+          <Anchor
+            external
+            href={\`\${repoEditRootURL}\${filename}\`}
+            css={{
+              textDecoration: 'none',
+              ':hover': {textDecoration: 'none'},
+            }}
+          >
+            <GitHubSVG /> {content.edit}
+          </Anchor>
+        </EditAnchorWrap>}
+      <Anchor href={\`#\${slugify(title)}\`} isSlug={true}>
+        <LinkSVG />
+        <h2
+          id={slugify(title)}
+          dangerouslySetInnerHTML={{__html: mdToHTMLUnwrapped(title)}}
+        />
+      </Anchor>
+      {isMissing ?
+        <MissingTranslation
+          dangerouslySetInnerHTML={{
+            __html: mdToHTML(content.missingTranslation),
+          }}
+        /> :
+        null}
+      {isOutdated ?
+        <OutdatedTranslation
+          dangerouslySetInnerHTML={{
+            __html: mdToHTML(content.outdatedTranslation).replace(
+                '__URL__',
+                \`\${repoEditRootURL}\${filename}\`,
+              ),
+          }}
+        /> :
+        null}
+      <glamorous.Div
+        paddingLeft={10}
+        borderLeft=\\"2px solid #ccc\\"
+        opacity={0.9}
+        marginTop={10}
+        marginBottom={20}
+        dangerouslySetInnerHTML={{__html: mdToHTML(subtitle)}}
+      />
+      <DocSectionDetails {...props} />
+    </Section>
+  )
+}
+
+function DocSectionDetails({title, codeSandboxId, markdown}) {
+  return (
+    <div>
+      {interactiveMarkdown(markdown)}
+      {codeSandboxId ?
+        <ClickToRender
+          component={CodeSandboxEmbed}
+          summary=\\"CodeSandbox\\"
+          props={{title, id: codeSandboxId}}
+        /> :
+        null}
+    </div>
+  )
+}
+
+function getContributors(sections) {
+  return sections
+    .reduce((contrib, sec) => contrib.concat(sec.contributors), [])
+    .filter(Boolean)
+    .filter((x, i, a) => a.indexOf(x) === i)
+}
+"
+`;
+
+exports[`glamorous-locale-chooser.js 1`] = `
+"import React from 'react'
+import glamorous from 'glamorous'
+import content from './content/locale-chooser.md'
+// get flags from https://github.com/lipis/flag-icon-css/tree/master/flags/4x3
+import EnSvg from './svgs/en.svg'
+import EsSvg from './svgs/es.svg'
+import FrSvg from './svgs/fr.svg'
+import DeSvg from './svgs/de.svg'
+import CnSvg from './svgs/cn.svg'
+
+const {supportedLocales, fallbackLocale} = require('../config.json')
+
+const svgStyle = {width: '1em', height: '100%'}
+const Wrapper = glamorous.div({
+  fontSize: '.8em',
+  cursor: 'pointer',
+})
+
+const Toggle = glamorous.button(props => ({
+  backgroundColor: props.theme.colors.white,
+  color: props.theme.colors.primaryMed,
+  border: \`1px solid \${props.theme.colors.primaryMed}\`,
+  textAlign: 'left',
+  padding: '3px 10px',
+  display: 'block',
+  fontSize: '1em',
+  width: '100%',
+  borderBottomColor: props.open ? 'transparent' : colors.primaryMed,
+
+  [mediaQueries.largeDown]: {
+    textAlign: 'center',
+  }
+}))
+
+const List = glamorous.ul(props => ({
+  flexDirection: 'column',
+  padding: 0,
+  margin: 0,
+  opacity: '.9',
+  border: \`1px solid \${props.theme.colors.primaryMed}\`,
+  display: props.open ? 'flex' : 'none',
+  visibility: props.open ? 'visible' : 'collapse',
+  position: props.top ? 'absolute' : 'relative',
+  width: props.top ? '' : '100%',
+
+  [mediaQueries.largeDown]: {
+    position: 'relative',
+    width: '100%',
+  }
+}))
+
+const Item = glamorous.li(props => ({
+  display: 'flex',
+  flex: 1,
+  textAlign: 'left',
+  margin: 0,
+  backgroundColor: props.theme.colors.white,
+  lineHeight: 1,
+
+  [mediaQueries.largeDown]: {
+    textAlign: 'center',
+  },
+
+  '&::before': {
+    content: 'initial',
+  }
+}))
+
+const Link = glamorous.a(props => ({
+  width: '100%',
+  padding: '6px 10px',
+  transition: 'color .3s, background-color .3s',
+  outline: 'none',
+
+  '&:focus, &:hover, &:active': {
+    textDecoration: 'none',
+    color: colors.white,
+    backgroundColor: colors.primaryMed,
+  }
+}))
+
+const localeContent = ({display, Flag = () => null}) =>
+  (<div aria-hidden=\\"true\\">
+    <Flag {...svgStyle} /> <span>{display}</span>
+  </div>)
+
+class LocaleChooser extends React.Component {
+  state = {
+    open: false,
+    locales: [],
+    currentLocale: process.env.LOCALE || fallbackLocale,
+  }
+
+  componentDidMount() {
+    document.addEventListener('click', this.click, true)
+    document.addEventListener('keydown', this.keyDown, true)
+    // eslint-disable-next-line react/no-did-mount-set-state
+    this.setState(() => {
+      return {locales: [...supportedLocales, 'help'].map(mapLocale)}
+    })
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('click', this.click, true)
+    document.removeEventListener('keydown', this.keyDown, true)
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.open && !prevState.open) {
+      this['link-en'].focus()
+    }
+  }
+
+  toggleOpen = () => {
+    this.setState(prevState => {
+      return {open: !prevState.open}
+    })
+  }
+
+  click = event => {
+    if (!this.toggle.contains(event.target) && this.state.open) {
+      this.toggleOpen()
+    }
+  }
+
+  keyDown = event => {
+    // Close on escape
+    if (this.state.open && event.keyCode === 27) {
+      this.toggleOpen()
+      this.toggle.focus()
+    }
+  }
+
+  itemHover = event => {
+    event.target.focus()
+  }
+
+  itemBlur = event => {
+    event.target.blur()
+  }
+
+  render() {
+    return (
+      <Wrapper>
+        <Toggle
+          onClick={this.toggleOpen}
+          open={this.state.open}
+          aria-label={content.ariaLabelButton}
+          aria-haspopup=\\"true\\"
+          aria-owns=\\"locale-selector\\"
+          aria-expanded={this.state.open ? 'true' : 'false'}
+          innerRef={button => {
+            this.toggle = button
+          }}
+        >
+          {localeContent(mapLocale(this.state.currentLocale))}
+        </Toggle>
+        <List
+          id=\\"locale-selector\\"
+          aria-label={content.ariaLabelList}
+          aria-hidden={!this.state.open}
+          open={this.state.open}
+          top={this.props.top}
+        >
+          {this.state.locales.map(({key, display, Flag}) =>
+            (<Item key={key}>
+              <Link
+                href={localeToHref(key, this.state.currentLocale)}
+                lang={key === 'help' ? null : key}
+                aria-label={display}
+                onMouseEnter={this.itemHover}
+                onMouseLeave={this.itemBlur}
+                innerRef={a => {
+                  this[\`link-\${key}\`] = a
+                }}
+              >
+                {localeContent({Flag, display})}
+              </Link>
+            </Item>),
+          )}
+        </List>
+      </Wrapper>
+    )
+  }
+}
+export default LocaleChooser
+
+function localeToHref(locale, currentLocale) {
+  if (supportedLocales.includes(locale)) {
+    const host = getHost(currentLocale)
+    const {protocol, pathname, hash, search} = window.location
+    const prefix = fallbackLocale === locale ? '' : \`\${locale}.\`
+    return \`\${protocol}//\${prefix}\${host}\${pathname}\${search}\${hash}\`
+  }
+
+  return 'https://github.com/kentcdodds/glamorous-website/blob/master/other/CONTRIBUTING_DOCUMENTATION.md'
+}
+
+function getHost(currentLocale) {
+  const {host} = window.location
+  const [localePart, ...rest] = host.split('.')
+  if (localePart === currentLocale) {
+    return rest.join('.')
+  }
+
+  return host
+}
+
+function mapLocale(key = fallbackLocale) {
+  const localeMap = {
+    en: {
+      key,
+      display: 'English',
+      Flag: EnSvg,
+    },
+    es: {
+      key,
+      display: 'Español',
+      Flag: EsSvg,
+    },
+    fr: {
+      key,
+      display: 'Français',
+      Flag: FrSvg,
+    },
+    de: {
+      key,
+      display: 'Deutsche',
+      Flag: DeSvg,
+    },
+    zh: {
+      key,
+      display: '中文',
+      Flag: CnSvg,
+    },
+    help: {
+      key,
+      display: content.help,
+    },
+    default: {
+      key,
+      display: key,
+    },
+  }
+  return localeMap[key] || localeMap.default
+}
+"
+`;
+
+exports[`glamorous-nav.js 1`] = `
+"import React from 'react'
+import glamorous from 'glamorous'
+import {Anchor} from '../components/styled-links'
+import LipstickIcon from './lipstick-icon'
+import Separator from './separator'
+import LocaleChooser from './locale-chooser'
+import MenuSVG from './svgs/menu.svg'
+import content from './content/nav.md'
+
+// eslint-disable-next-line complexity
+const Navbar = glamorous.nav(({top, theme: {mediaQueries}}) => ({
+  width: '100%',
+  margin: 0,
+  [mediaQueries.largeUp]: {
+    display: top ? 'flex' : null,
+    justifyContent: top ? 'flex-end' : 'flex-start',
+    flexDirection: top ? 'row' : 'column',
+    flex: top ? null : 'none',
+    width: top ? null : 300,
+    alignItems: 'center',
+    paddingTop: '0.5rem',
+  },
+  [mediaQueries.largeDown]: {
+    display: null,
+    flex: null,
+    width: null,
+    marginTop: 0,
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
+  },
+}))
+
+const NavToggle = glamorous.a(props => ({
+  fill: props.theme.colors.primaryMed,
+  backgroundColor: props.theme.colors.white,
+  display: 'flex',
+  justifyContent: 'flex-end',
+  width: '100%',
+  paddingTop: '0.25rem',
+  paddingBottom: '0.25rem',
+  paddingRight: '0.25rem',
+
+  [mediaQueries.largeUp]: {
+    display: 'none',
+  }
+}))
+
+const NavSeparator = glamorous(Separator)((props, {mediaQueries}) => ({
+  height: 1,
+  [mediaQueries.largeUp]: {
+    display: 'none',
+  },
+}))
+
+// Used to hide text for a11y - ie. Home in navigation
+const Hidden = glamorous.span({
+  position: 'absolute',
+  left: '-10000px',
+  top: 'auto',
+  width: '1px',
+  height: '1px',
+  overflow: 'hidden',
+})
+
+const ListItem = glamorous.li({
+  paddingLeft: 10,
+  paddingRight: 10,
+  paddingBottom: 4,
+  '&::before': {
+    content: 'initial',
+  },
+})
+
+const List = glamorous.ul(
+  // eslint-disable-next-line complexity
+  ({top, isOpen, theme: {colors, mediaQueries}}) => ({
+    listStyle: 'none',
+    display: 'block',
+    fontSize: '1.25em',
+    margin: '0 auto',
+    paddingLeft: top ? null : 0,
+    height: 'auto',
+    overflow: 'hidden',
+    backgroundColor: colors.white,
+    padding: 0,
+    [mediaQueries.largeUp]: {
+      display: 'flex',
+      justifyContent: top ? 'center' : 'flex-start',
+      flexDirection: top ? 'row' : 'column',
+      width: top ? 'auto' : null,
+      maxHeight: top ? '4rem' : null,
+      backgroundColor: 'inherit',
+      opacity: 1,
+    },
+    [mediaQueries.largeDown]: {
+      display: 'block',
+      textAlign: 'center',
+      width: '100%',
+      padding: isOpen ? '1rem 0' : 0,
+      maxHeight: isOpen ? '100%' : 0,
+      opacity: isOpen ? 1 : 0,
+      justifyContent: 'center',
+      flexDirection: 'row',
+    },
+  }),
+)
+
+class Nav extends React.Component {
+  state = {
+    open: false,
+  }
+
+  handleClick = () => {
+    this.setState(prevState => {
+      return {open: !prevState.open}
+    })
+  }
+
+  render() {
+    const {pathname, top} = this.props
+    return (
+      <Navbar className=\\"Navbar\\" top={top}>
+        <NavToggle onClick={this.handleClick}>
+          <MenuSVG />
+        </NavToggle>
+        <NavSeparator />
+        <List isOpen={this.state.open} top={top}>
+          <ListItemAnchor href=\\"/\\" css={{textAlign: 'center'}}>
+            <LipstickIcon width={top ? 20 : 40} />
+            <Hidden>
+              {content.home}
+            </Hidden>
+          </ListItemAnchor>
+          <ListItemAnchor href=\\"/getting-started\\">
+            {content.gettingStarted}
+          </ListItemAnchor>
+          <ListItemAnchor href=\\"/basics\\">
+            {content.basics}
+          </ListItemAnchor>
+          <ListItemAnchor href=\\"/advanced\\">
+            {content.advanced}
+          </ListItemAnchor>
+          <ListItemAnchor href=\\"/examples\\">
+            {content.examples}
+          </ListItemAnchor>
+          <ListItemAnchor href=\\"/integrations\\">
+            {content.integrations}
+          </ListItemAnchor>
+          <ListItemAnchor href=\\"/api\\">
+            {content.api}
+          </ListItemAnchor>
+          <ListItem>
+            <LocaleChooser top={top} />
+          </ListItem>
+        </List>
+      </Navbar>
+    )
+
+    function ListItemAnchor({children, css, ...rest}) {
+      return (
+        <ListItem css={css}>
+          <Anchor
+            prefetch={process.env.USE_PREFETCH}
+            href=\\"/getting-started\\"
+            pathname={pathname}
+            {...rest}
+          >
+            {children}
+          </Anchor>
+        </ListItem>
+      )
+    }
+  }
+}
+
+export default Nav
+"
+`;
+
+exports[`glamorous-styled-links.js 1`] = `
+"import React from 'react'
+import Link from 'next/link'
+import glamorous from 'glamorous'
+import {colors} from '../styles/global-styles'
+
+const getPathname = pathname => {
+  return pathname === undefined ? '' : pathname
+}
+
+const basicLinkStyles = {cursor: 'pointer'}
+
+const anchorStyles = {
+  textDecoration: 'underline',
+  color: colors.primaryMed,
+}
+
+const activeLinkStyles = (props, theme) => ({
+  color: props.active || props.external ?
+    theme.colors.primary :
+    theme.colors.primaryMed,
+  textDecoration: props.active || props.external ? 'underline' : 'none',
+})
+
+const slugStyles = {
+  position: 'relative',
+  display: 'block',
+
+  '& svg': {
+    display: 'none',
+    position: 'absolute',
+    top: 0,
+    left: '-2.5rem',
+    width: '1.75em',
+    height: '2.827em',
+  },
+
+  '&:hover svg': {
+    display: 'block',
+  },
+}
+
+const StyledAnchor = glamorous.a(
+  basicLinkStyles,
+  anchorStyles,
+  (props, theme) => activeLinkStyles(props, theme),
+  props => (props.isSlug ? slugStyles : ''),
+)
+
+const Anchor = ({href, prefetch, external, pathname, isSlug, ...rest}) => {
+  if (external) {
+    return <StyledAnchor href={href} external {...rest} />
+  }
+  if (isSlug) {
+    return <StyledAnchor href={href} external isSlug {...rest} />
+  }
+  return (
+    <Link prefetch={prefetch} href={href}>
+      <StyledAnchor
+        href={href}
+        active={getPathname(pathname) === href}
+        {...rest}
+      />
+    </Link>
+  )
+}
+
+const solidColors = {backgroundColor: colors.primaryMed, color: 'white'}
+
+const transparentColors = {
+  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  color: colors.primary,
+}
+
+const secondaryButtonStyles = {...transparentColors, ':hover': solidColors}
+
+const Button = glamorous(Anchor)(
+  basicLinkStyles,
+  {
+    fontSize: '1em',
+    border: \`1px solid \${colors.primaryMed}\`,
+    width: '11em',
+    padding: '0.7em 0',
+    textDecoration: 'none',
+    borderRadius: 4,
+    display: 'inline-block',
+    margin: '.5em 1em',
+    transition: 'all .3s',
+    ...solidColors,
+    ':hover': transparentColors,
+  },
+  props => ({...(props.secondary ? secondaryButtonStyles : {})}),
+)
+
+export {Button, Anchor}
+"
+`;
+
+exports[`glamorous-theme.js 1`] = `
+"import React from 'react'
+import {css, rehydrate} from 'glamor'
+import glamorous, {ThemeProvider, Div} from 'glamorous'
+import baseStyles from '../styles/base'
+import GlobalStyles from '../styles/global-styles'
+import Nav from './nav'
+import Footer from './footer'
+import Contributors from './contributors'
+
+glamorous.config.useDisplayNameInClassName = true
+
+// Adds server generated styles to glamor cache.
+// Has to run before any \`style()\` calls
+// '__NEXT_DATA__.ids' is set in '_document.js'
+/* istanbul ignore next */
+if (typeof window !== 'undefined' && window.__NEXT_DATA__ !== undefined) {
+  rehydrate(window.__NEXT_DATA__.ids)
+}
+
+const Wrapper = glamorous.div(
+  ({top, theme: {colors, fonts, mediaQueries}}) => ({
+    fontFamily: fonts.sansserif,
+    backgroundColor: colors.primaryLight,
+    position: 'relative',
+    display: 'flex',
+    justifyContent: top ? 'flex-end' : 'flex-start',
+    flexDirection: top ? 'column' : 'row',
+    zIndex: 1,
+
+    [mediaQueries.largeDown]: {
+      display: 'block',
+      justifyContent: null,
+      flexDirection: null,
+    },
+
+    ':after': {
+      content: '\\"\\"',
+      pointerEvents: 'none',
+      backgroundImage: 'url(/static/images/g-background.svg)',
+      backgroundSize: '800px',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: '70% -300px',
+      position: 'absolute',
+      zIndex: 0,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+  }),
+)
+
+function Layout({pathname, children, contributors, topNav = false}) {
+  css.insert(baseStyles())
+  return (
+    <ThemeProvider theme={GlobalStyles}>
+      <Wrapper top={topNav}>
+        <Nav pathname={pathname} top={topNav} />
+        <Div overflow=\\"auto\\" width=\\"100%\\">
+          {children}
+          <Contributors contributors={contributors || []} />
+          <Footer />
+        </Div>
+      </Wrapper>
+    </ThemeProvider>
+  )
+}
+
+export default Layout
+"
+`;
